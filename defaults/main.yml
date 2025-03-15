@@ -1,0 +1,6 @@
+---
+# roles/swap/defaults/main.yml
+
+swap_file_path: /swapfile
+swap_file_size_mb: 2048
+swap_swappiness: 10

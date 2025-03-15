@@ -1,0 +1,38 @@
+---
+# roles/swap/tasks/main.yml
+
+- name: "Check if swap file exists"
+  ansible.builtin.stat:
+    path: "{{ swap_file_path }}"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: swap_file
+
+- name: "Create swap file"
+  ansible.builtin.command:
+    cmd: "fallocate -l {{ swap_file_size_mb }}M {{ swap_file_path }}"
+  when: not swap_file.stat.exists
+  changed_when: true
+  register: swap_create
+  notify: Format swap file
+
+- name: "Set correct permissions for swap file"
+  ansible.builtin.file:
+    path: "{{ swap_file_path }}"
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: "Add swap entry to /etc/fstab"
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    line: "{{ swap_file_path }} none swap sw 0 0"
+    state: present
+
+- name: "Set swappiness value"
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: "{{ swap_swappiness }}"
+    state: present
+    sysctl_file: /etc/sysctl.conf
