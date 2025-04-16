@@ -1,10 +1,10 @@
 ---
 # roles/swap/defaults/main.yml
 
-swap_file_path: /swapfile            # Path to the swap file
-swap_file_size_mb: 2048              # Size of the swap file in megabytes
-swap_swappiness: 10                  # Swappiness value to set via sysctl
+ansible_role_swap_file_path: /swapfile            # Path to the swap file
+ansible_role_swap_file_size_mb: 2048              # Size of the swap file in megabytes
+ansible_role_swap_swappiness: 10                  # Swappiness value to set via sysctl
 
 # Optional flags
-swap_add_fstab: true                 # Add the swap file to /etc/fstab for persistence
-swap_activate: true                  # Immediately activate swap with 'swapon'
+ansible_role_swap_add_fstab: true                 # Add the swap file to /etc/fstab for persistence
+ansible_role_swap_activate: true                  # Immediately activate swap with 'swapon'
