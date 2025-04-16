@@ -1,7 +1,0 @@
----
-# roles/swap/handlers/main.yml
-
-- name: Reload Swap
-  ansible.builtin.command:
-    cmd: sysctl -p
-  changed_when: false

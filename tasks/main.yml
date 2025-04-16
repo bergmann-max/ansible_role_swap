@@ -9,13 +9,11 @@
     get_mime: false
   register: swap_file
 
-- name: "Create swap file"
+- name: "Create swap file (if not exists)"
   ansible.builtin.command:
     cmd: "fallocate -l {{ swap_file_size_mb }}M {{ swap_file_path }}"
   when: not swap_file.stat.exists
   changed_when: true
-  register: swap_create
-  notify: Format swap file
 
 - name: "Set correct permissions for swap file"
   ansible.builtin.file:
@@ -24,11 +22,21 @@
     group: root
     mode: '0600'
 
-- name: "Add swap entry to /etc/fstab"
+- name: "Force format swap file"
+  ansible.builtin.command: "mkswap {{ swap_file_path }}"
+  changed_when: true
+
+- name: "Activate swap file (conditional)"
+  ansible.builtin.command: "swapon {{ swap_file_path }}"
+  when: swap_activate
+  changed_when: true
+
+- name: "Add swap entry to /etc/fstab (conditional)"
   ansible.builtin.lineinfile:
     path: /etc/fstab
     line: "{{ swap_file_path }} none swap sw 0 0"
     state: present
+  when: swap_add_fstab
 
 - name: "Set swappiness value"
   ansible.posix.sysctl:
