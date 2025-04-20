@@ -9,34 +9,56 @@
     get_mime: false
   register: swap_file
 
-- name: "Create swap file (if not exists)"
+- name: "Check if swap is already active"
+  ansible.builtin.command: "swapon --show=NAME --noheadings"
+  register: active_swaps
+  changed_when: false
+  failed_when: false
+
+- name: "Determine if swap file is active"
+  ansible.builtin.set_fact:
+    swap_is_active: "{{ active_swaps.stdout_lines | select('equalto', swap_file_path) | list | length > 0 }}"
+
+- name: "Create swap file using fallocate (if supported)"
   ansible.builtin.command:
     cmd: "fallocate -l {{ swap_file_size_mb }}M {{ swap_file_path }}"
-  when: not swap_file.stat.exists
+  when: not swap_file.stat.exists and not swap_is_active
+  changed_when: true
+  ignore_errors: true
+  register: fallocate_result
+
+- name: "Fallback to dd if fallocate failed"
+  ansible.builtin.command:
+    cmd: "dd if=/dev/zero of={{ swap_file_path }} bs=1M count={{ swap_file_size_mb }}"
+  when: fallocate_result is failed and not swap_file.stat.exists and not swap_is_active
   changed_when: true
 
-- name: "Set correct permissions for swap file"
+- name: "Ensure correct permissions for swap file"
   ansible.builtin.file:
     path: "{{ swap_file_path }}"
     owner: root
     group: root
     mode: '0600'
+  when: not swap_is_active
 
-- name: "Force format swap file"
-  ansible.builtin.command: "mkswap {{ swap_file_path }}"
+- name: "Format swap file"
+  ansible.builtin.command: "mkswap -L SWAPFILE {{ swap_file_path }}"
+  when: not swap_is_active
   changed_when: true
 
-- name: "Activate swap file (conditional)"
+- name: "Activate swap file"
   ansible.builtin.command: "swapon {{ swap_file_path }}"
-  when: swap_activate
+  when: swap_activate | default(true) and not swap_is_active
   changed_when: true
 
-- name: "Add swap entry to /etc/fstab (conditional)"
-  ansible.builtin.lineinfile:
-    path: /etc/fstab
-    line: "{{ swap_file_path }} none swap sw 0 0"
+- name: "Ensure swap is in /etc/fstab"
+  ansible.posix.mount:
+    name: none
+    src: "{{ swap_file_path }}"
+    fstype: swap
+    opts: sw
     state: present
-  when: swap_add_fstab
+  when: swap_add_fstab | default(true)
 
 - name: "Set swappiness value"
   ansible.posix.sysctl:
@@ -44,3 +66,4 @@
     value: "{{ swap_swappiness }}"
     state: present
     sysctl_file: /etc/sysctl.conf
+  when: swap_swappiness is defined

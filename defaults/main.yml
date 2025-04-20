@@ -1,10 +1,15 @@
 ---
 # roles/swap/defaults/main.yml
 
+# Swap File Settings
 swap_file_path: /swapfile            # Path to the swap file
-swap_file_size_mb: 2048              # Size of the swap file in megabytes
-swap_swappiness: 10                  # Swappiness value to set via sysctl
+swap_file_size_mb: 2048              # Size of the swap file in megabytes (e.g. 2048 = 2 GB)
+swap_swappiness: 10                  # vm.swappiness value to configure via sysctl
 
-# Optional flags
-swap_add_fstab: true                 # Add the swap file to /etc/fstab for persistence
-swap_activate: true                  # Immediately activate swap with 'swapon'
+# Optional Flags
+swap_add_fstab: true                 # Add the swap file to /etc/fstab for persistence after reboot
+swap_activate: true                 # Activate the swap file immediately with 'swapon'
+
+# Advanced Settings (internal use or optional tuning)
+swap_label: SWAPFILE                 # Optional label for the swap file (used with mkswap -L)
+swap_fallback_to_dd: true           # Whether to fall back to dd if fallocate is not available
