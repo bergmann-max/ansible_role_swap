@@ -2,14 +2,14 @@
 # roles/swap/defaults/main.yml
 
 # Swap File Settings
-swap_file_path: /swapfile            # Path to the swap file
-swap_file_size_mb: 2048              # Size of the swap file in megabytes (e.g. 2048 = 2 GB)
-swap_swappiness: 10                  # vm.swappiness value to configure via sysctl
+ansible_role_swap_file_path: /swapfile            # Path to the swap file
+ansible_role_swap_file_size_mb: 2048              # Size of the swap file in megabytes (e.g. 2048 = 2 GB)
+ansible_role_swap_swappiness: 10                  # vm.swappiness value to configure via sysctl
 
 # Optional Flags
-swap_add_fstab: true                 # Add the swap file to /etc/fstab for persistence after reboot
-swap_activate: true                 # Activate the swap file immediately with 'swapon'
+ansible_role_swap_add_fstab: true                 # Add the swap file to /etc/fstab for persistence after reboot
+ansible_role_swap_activate: true                 # Activate the swap file immediately with 'swapon'
 
 # Advanced Settings (internal use or optional tuning)
-swap_label: SWAPFILE                 # Optional label for the swap file (used with mkswap -L)
-swap_fallback_to_dd: true           # Whether to fall back to dd if fallocate is not available
+ansible_role_swap_label: SWAPFILE                 # Optional label for the swap file (used with mkswap -L)
+ansible_role_swap_fallback_to_dd: true           # Whether to fall back to dd if fallocate is not available
